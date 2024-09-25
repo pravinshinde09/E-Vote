@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "testapp",
-    "slug": "testapp",
+    "name": "E-Vote",
+    "slug": "E-Vote",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -19,8 +19,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.pravin16.testapp"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -32,11 +31,6 @@
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "extra": {
-      "eas": {
-        "projectId": "a97cc3a3-0461-49c5-88d6-0d319561ee71"
-      }
     }
   }
 }
