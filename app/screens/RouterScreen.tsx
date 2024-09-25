@@ -39,7 +39,7 @@ const RouterScreen = () => {
 
   if (isProfileComplete === null) {
     return (
-      <ImageBackground source={require('../../assets/images/landing.png')} style={styles.background}>
+      <ImageBackground source={require('../../assets/images/loading.png')} style={styles.background}>
         <Loading />
       </ImageBackground>
     );
