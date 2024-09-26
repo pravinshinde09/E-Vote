@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { StyleSheet, View, Image } from 'react-native';
+import { StyleSheet, View, Image, TouchableOpacity } from 'react-native';
 import Typography from '../Typography';
 import { RADIUS, SPACING } from '../../theme';
 import ReferencePostCard from '../ReferencePostCard';
@@ -14,6 +14,7 @@ import PieChart from '../PieChart';
 import FileViewer from '../FileViewer';
 import usePostAssets from '../../hooks/usePostAssets';
 import { sendNotification } from '../../appwriteDB/sendPushNotification';
+import Entypo from '@expo/vector-icons/Entypo';
 
 type PostCardProps = {
     post: PostData;
@@ -103,18 +104,19 @@ const PostCard: React.FC<PostCardProps> = ({ post, userProfile, handleLike, hand
                             <Typography variant="body01">{timeAgo(post.timestamp)}</Typography>
                         </View>
                     </View>
-                    <Button variant="link" onPress={handlePressModal}><Typography variant='title03' style={{ fontWeight: '700' }}>⋮</Typography></Button>
+                    <Entypo name="dots-three-vertical" size={18} color={colors.icon} onPress={handlePressModal} />
                 </View>
-                <View style={{ gap: SPACING.spacing02 }}>
-                    <Typography variant="title03" style={{ fontWeight: '700' }}>{post.title}</Typography>
-                    <Typography variant="title04">{post.details}</Typography>
+                <View style={{ gap: SPACING.spacing02 }} >
+                    <TouchableOpacity onPress={handlePressModal}>
+                        <Typography variant="title03" style={{ fontWeight: '700' }}>{post.title}</Typography>
+                        <Typography variant="title04">{post.details}</Typography>
 
-                    {post.referencePostId &&
-                        <View style={{ padding: SPACING.spacing02 }}>
-                            <ReferencePostCard referencePostId={post.referencePostId} />
-                        </View>
-                    }
-
+                        {post.referencePostId &&
+                            <View style={{ padding: SPACING.spacing02 }}>
+                                <ReferencePostCard referencePostId={post.referencePostId} />
+                            </View>
+                        }
+                    </TouchableOpacity>
                     {assets.length > 0 && <FileViewer fileUrls={assets} />}
 
                 </View>

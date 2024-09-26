@@ -19,7 +19,7 @@ const Input: FC<InputProps> = ({ label, ...rest }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput {...rest} style={styles.inputContainer} multiline />
+      <TextInput {...rest} style={[styles.inputContainer]} placeholderTextColor={colors.text} multiline />
     </View>
   );
 };

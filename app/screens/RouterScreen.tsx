@@ -1,4 +1,4 @@
-import { ImageBackground, StyleSheet, View } from 'react-native';
+import { ImageBackground, SafeAreaView, StyleSheet, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import UserDatabaseService from '../appwriteDB/user_db';
 import CreateProfile from '../components/Profile/CreateProfile';
@@ -46,13 +46,13 @@ const RouterScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {isProfileComplete ? (
         <BottomNavigator />
       ) : (
         <CreateProfile onProfileCreated={handleProfileCreated} />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

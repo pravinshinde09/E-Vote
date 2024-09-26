@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { getAllNotification, EditNotification, DeleteNotification } from '../appwriteDB/sendPushNotification';
 import { account } from '../appwrite/appWriteConfig';
 import { mapDocumentsToNotifications } from '../utils/notificationMapper';
@@ -7,10 +7,14 @@ import { Notification } from '../utils/notificationMapper';
 import Entypo from '@expo/vector-icons/Entypo';
 import { SPACING } from '../theme';
 import showAlert from './Alert';
+import { StyleProps, useTheme } from '../context/ThemeProvider';
+import Typography from './Typography';
 
 const NotificationList = () => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [expandedNotifications, setExpandedNotifications] = useState<Set<string>>(new Set());
+    const { colors } = useTheme()
+    const styles = getStyles({ colors })
 
     useEffect(() => {
         const fetchAllNotifications = async () => {
@@ -88,13 +92,13 @@ const NotificationList = () => {
         return (
             <View style={[styles.notificationItem, item.isRead ? styles.readNotification : styles.unreadNotification]}>
                 <TouchableOpacity onPress={() => handleCardPress(item)}>
-                    <Text style={styles.title}>{item.title}</Text>
-                    <Text style={styles.message} numberOfLines={isExpanded ? undefined : 1}>
+                    <Typography style={{ fontWeight: '700' }} variant={'title04'}>{item.title}</Typography>
+                    <Typography variant='body01' numberOfLines={isExpanded ? undefined : 1}>
                         {item.message}
-                    </Text>
+                    </Typography>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(item.$id)} style={styles.closeIcon}>
-                    <Entypo name="circle-with-cross" size={24} color="black" />
+                    <Entypo name="circle-with-cross" size={24} color={colors.icon} />
                 </TouchableOpacity>
             </View>
         );
@@ -112,11 +116,11 @@ const NotificationList = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = ({ colors }: StyleProps) => StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#f8f8f8',
+        backgroundColor: colors.background,
     },
     notificationItem: {
         padding: SPACING.spacing03,
@@ -126,26 +130,19 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 5,
         elevation: 2,
-        position: 'relative', 
+        position: 'relative',
     },
     unreadNotification: {
-        backgroundColor: '#d3d3d3',
+        backgroundColor: colors.gray100,
     },
     readNotification: {
-        backgroundColor: '#fff',
+        backgroundColor: colors.card,
     },
-    title: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    message: {
-        fontSize: 14,
-    },
+
     closeIcon: {
         position: 'absolute',
-        top: 10,
-        right: 10,
+        top: SPACING.spacing02,
+        right: SPACING.spacing02,
     },
 });
 

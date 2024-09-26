@@ -177,7 +177,7 @@ const OrganizationInfo = () => {
                                 <Typography variant="title03">{organizationDetails.$id}</Typography>
                             </View>
                             <TouchableOpacity onPress={handleShare}>
-                                <AntDesign name="sharealt" size={24} color="black" style={{ paddingHorizontal: SPACING.spacing03 }} />
+                                <AntDesign name="sharealt" size={24} color={colors.icon} style={{ paddingHorizontal: SPACING.spacing03 }} />
                             </TouchableOpacity>
                         </View>
                         <View style={styles.card}>
@@ -222,7 +222,7 @@ const getStyles = ({ colors }: StyleProps) => StyleSheet.create({
     container: {
         flex: 1,
         padding: SPACING.spacing03,
-        backgroundColor: '#fff',
+        backgroundColor: colors.background,
     },
     card: {
         backgroundColor: colors.card,
