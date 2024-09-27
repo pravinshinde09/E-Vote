@@ -43,29 +43,29 @@ const PostList = () => {
       setLoading(true);
       const isApproved = false;
       const isDisApproved = false;
-  
+
       // Fetch organizationId, can be null
       const organizationId = await getOrganizationId();
-      
+
       // If organizationId is not available, get the current user's ID
       const user = await account.get();
       const userId = user.$id;
-  
+
       let response;
-  
+
       if (organizationId) {
         response = await listPostsByStatus(isApproved, isDisApproved, organizationId);
       } else {
         response = await listPostsByUser(userId);
       }
-  
+
       // Sort posts by timestamp
       response.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-  
+
       // Map and set posts
       const formattedPosts = mapPostResponse(response);
       setPosts(formattedPosts);
-  
+
       // Fetch user profiles for all posts
       const profiles: { [key: string]: UserData | null } = {};
       for (const post of formattedPosts) {
@@ -73,7 +73,7 @@ const PostList = () => {
         profiles[post.userId] = profile;
       }
       setUserProfiles(profiles);
-  
+
     } catch (err) {
       console.error("Error fetching posts:", err);
       setError("Failed to load posts");
@@ -82,7 +82,7 @@ const PostList = () => {
       setRefreshing(false);
     }
   };
-  
+
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -176,8 +176,7 @@ const PostList = () => {
       console.error("Error updating post status:", error);
     }
   };
-
-
+  
   const calculatePercentage = (count: number): number => (totalUsers > 0 ? (count / totalUsers) * 100 : 0);
 
   const renderItem = ({ item }: { item: PostData }) => {
