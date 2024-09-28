@@ -11,7 +11,8 @@ import { UserData } from '../Profile/Type';
 import showAlert from '../Alert';
 import PostCard from './PostCard';
 import Loading from '../Loading';
-import { getOrganizationId } from '../../appwriteDB/organizationInfo_db';
+import { useUserOrg } from '@/app/context/userOrgContext';
+import { useLanguage } from '@/app/context/LocalizationContext';
 
 const PostList = () => {
   const [posts, setPosts] = useState<PostData[]>([]);
@@ -21,6 +22,8 @@ const PostList = () => {
   const [userProfiles, setUserProfiles] = useState<{ [key: string]: UserData | null }>({});
   const userDatabaseService = new UserDatabaseService();
   const [totalUsers, setTotalUsers] = useState<number>(0);
+  const { organizationId } = useUserOrg()
+  const { translate } = useLanguage()
 
   useEffect(() => {
     fetchPosts();
@@ -29,7 +32,7 @@ const PostList = () => {
   useEffect(() => {
     const getAllUserTotal = async () => {
       try {
-        const response = await userDatabaseService.getAllUserTotal();
+        const response = await userDatabaseService.getTotalUsers(organizationId);
         setTotalUsers(response || 0);
       } catch (error) {
         console.log('Error occurred while fetching total user count.');
@@ -43,9 +46,6 @@ const PostList = () => {
       setLoading(true);
       const isApproved = false;
       const isDisApproved = false;
-
-      // Fetch organizationId, can be null
-      const organizationId = await getOrganizationId();
 
       // If organizationId is not available, get the current user's ID
       const user = await account.get();
@@ -91,8 +91,9 @@ const PostList = () => {
 
   const handleLike = async (postId: string) => {
     showAlert({
-      title: "Post Like",
-      message: "Are you sure you want to like this post?",
+      title: translate("post_agree"),
+      message: translate("post_agree_msg"),
+      cancelText: translate('cancel'),
       onConfirm: async () => {
         try {
           const user = await account.get();
@@ -104,14 +105,15 @@ const PostList = () => {
           Alert.alert("Error", "Failed to like post");
         }
       },
-      confirmText: "Like"
+      confirmText: translate("agree")
     });
   };
 
   const handleDislike = async (postId: string) => {
     showAlert({
-      title: "Post Dislike",
-      message: "Are you sure you want to dislike this post?",
+      title: translate("post_disAgree"),
+      message: translate("post_disAgree_msg"),
+      cancelText: translate('cancel'),
       onConfirm: async () => {
         try {
           const user = await account.get();
@@ -123,14 +125,15 @@ const PostList = () => {
           Alert.alert("Error", "Failed to dislike post");
         }
       },
-      confirmText: "Dislike"
+      confirmText: translate('disAgree')
     });
   };
 
   const handleNeutral = async (postId: string) => {
     showAlert({
-      title: "Neutral",
-      message: "Are you sure you want to set this post to neutral?",
+      title: translate("post_neutral"),
+      message: translate("post_neutral_msg"),
+      cancelText: translate('cancel'),
       onConfirm: async () => {
         try {
           const user = await account.get();
@@ -142,7 +145,7 @@ const PostList = () => {
           Alert.alert("Error", "Failed to set post to neutral");
         }
       },
-      confirmText: "Neutral"
+      confirmText: translate('neutral')
     });
   };
 
@@ -176,7 +179,7 @@ const PostList = () => {
       console.error("Error updating post status:", error);
     }
   };
-  
+
   const calculatePercentage = (count: number): number => (totalUsers > 0 ? (count / totalUsers) * 100 : 0);
 
   const renderItem = ({ item }: { item: PostData }) => {
@@ -202,14 +205,6 @@ const PostList = () => {
       />
     );
   };
-
-  if (loading && !refreshing) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Loading />
-      </View>
-    );
-  }
 
   if (error) {
     return <Text>{error}</Text>;

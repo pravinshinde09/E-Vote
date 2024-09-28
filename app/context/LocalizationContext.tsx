@@ -1,9 +1,8 @@
 import React, { createContext, useState, useContext } from 'react';
 import * as Localization from 'expo-localization';
 import en from '../localization/en.json';
-import fr from '../localization/fr.json';
-import pl from '../localization/pl.json';
-import de from '../localization/de.json';
+import hi from '../localization/hi.json';
+import mr from '../localization/mr.json';
 import { Language } from '../types/languageType';
 
 type Translations = {
@@ -12,16 +11,15 @@ type Translations = {
 
 const translationsMap: Record<Language, Translations> = {
   en,
-  fr,
-  pl,
-  de,
+  hi,
+  mr,
+ 
 };
 
 export const languages = [
   { code: 'en' as const, name: 'English' },
-  { code: 'fr' as const, name: 'French' },
-  { code: 'pl' as const, name: 'Polish' },
-  { code: 'de' as const, name: 'German' },
+  { code: 'mr' as const, name: 'Marathi' },
+  { code: 'hi' as const, name: 'Hindi' },
 ];
 
 interface LanguageContextType {
