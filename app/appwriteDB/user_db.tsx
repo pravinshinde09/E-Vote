@@ -107,17 +107,18 @@ class UserDatabaseService {
     }
   }
 
-  async getAllUserTotal(): Promise<number> {
+  async getTotalUsers(organizationId: string): Promise<number> {
     try {
       const response = await databases.listDocuments(
         APPWRITE_DATABASE_ID,
-        APPWRITE_USER_COLLECTION_ID
+        APPWRITE_USER_COLLECTION_ID,
+        [Query.equal('organizationId', organizationId)]
       );
-
+  
       const totalUsers = response.total;
       return totalUsers;
     } catch (error) {
-      console.error("DatabaseService :: getAllUser : ", error);
+      console.error("DatabaseService :: getTotalUsers : ", error);
       throw new Error(error instanceof Error ? error.message : String(error));
     }
   }

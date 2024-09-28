@@ -81,7 +81,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-        <View style={{ marginVertical: SPACING.spacing03 }}>
+        <View style={{ marginVertical: SPACING.spacing03, height:'100%' }}>
           <PostList />
         </View>
       </View>

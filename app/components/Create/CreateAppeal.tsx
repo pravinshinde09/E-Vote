@@ -33,6 +33,7 @@ const CreateAppeal = () => {
                 }));
             } catch (error) {
                 Alert.alert(`Error fetching post: ${(error as Error).message}`);
+                console.log('Error occurred while fetching post')
             }
         };
         fetchPostData();
