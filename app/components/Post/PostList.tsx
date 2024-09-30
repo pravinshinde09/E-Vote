@@ -193,7 +193,6 @@ const PostList = () => {
     if (disLikePercentage > 50 && !item.isDisApproved) {
       updatePost(item.$id, undefined, true);
     }
-
     return (
       <PostCard
         post={item}
@@ -205,6 +204,14 @@ const PostList = () => {
       />
     );
   };
+
+  if (loading && !refreshing) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Loading />
+      </View>
+    );
+  }
 
   if (error) {
     return <Text>{error}</Text>;

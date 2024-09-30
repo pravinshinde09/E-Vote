@@ -115,7 +115,7 @@ const CreateAppeal = () => {
             />
             <View style={styles.imageContainer}>
                 <FileSelector onFileSelected={handleFilePick} />
-                <Button variant='primary' onPress={handleSubmit}>Submit</Button>
+                <Button variant='primary' onPress={handleSubmit}>{translate('submit')}</Button>
             </View>
             {state.isUploading && <Loading />}
         </View>

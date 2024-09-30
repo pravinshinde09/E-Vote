@@ -35,9 +35,17 @@
   "post_neutral": "पोस्टवर तटस्थ",
   "post_neutral_msg": "तुम्हाला या पोस्टवर तटस्थ राहायचे आहे का?",
   "post_update_successfully": "पोस्ट यशस्वीरित्या अपडेट झाली.",
-  "Appeal": "अपील करा",
+  "appeal": "अपील करा",
   "save": "बदल जतन करा",
   "agree": "सहमत",
   "disAgree": "असहमत",
-  "neutral": "तटस्थ"
+  "neutral": "तटस्थ",
+  "submit": "सबमिट करा",
+  "select_file": "फाइल निवडा",
+  "org_id": "संघटना आयडी",
+  "org_name": "संघटनेचे नाव",
+  "org_details": "संघटनेचा तपशील",
+  "active": "सक्रिय",
+  "voted": "मत दिले",
+  "pending": "प्रलंबित"
 }

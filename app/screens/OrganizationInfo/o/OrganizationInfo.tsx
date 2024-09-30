@@ -121,8 +121,7 @@ const OrganizationInfo = () => {
             console.error('Error updating organization ID:', error);
             Alert.alert('Error', 'Failed to update organization ID.');
         }
-    };
-
+    }
     const handleShare = async () => {
         try {
             const result = await Share.share({

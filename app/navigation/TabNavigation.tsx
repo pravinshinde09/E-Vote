@@ -55,7 +55,7 @@ const BottomNavigator = () => {
         initialRouteName="HomeScreen"
         screenOptions={{
           headerStyle: {
-            backgroundColor: colors.background, // Set the header background color here
+            backgroundColor: colors.background, 
           },
           headerTintColor: colors.text,
           headerShown: false,

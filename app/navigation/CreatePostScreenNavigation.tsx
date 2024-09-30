@@ -62,7 +62,7 @@ const CreatePostScreenNavigation = ({ navigation }: any) => {
             color: colors.text
           },
           headerLeft: () => (
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.arrowIconStyle}>
+            <TouchableOpacity onPress={() => navigation.goBack('CreatePost')} style={styles.arrowIconStyle}>
               <AntDesign name="arrowleft" size={24} style={styles.IconStyle} />
             </TouchableOpacity>
           ),
