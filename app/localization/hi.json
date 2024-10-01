@@ -47,5 +47,9 @@
     "org_details": "संगठन का विवरण",
     "active": "सक्रिय",
     "voted": "मत दिया",
-    "pending": "लंबित"
+    "pending": "लंबित",
+    "title" : "शीर्षक",
+    "details" : "विवरण",
+    "enter_title": "शीर्षक दर्ज करें",
+    "enter_details": "विवरण दर्ज करें"
 }

@@ -48,5 +48,9 @@
   "active": "Active",
   "voted": "Voted",
   "pending": "Pending",
-  "no_file_selected" : "File not selected"
+  "no_file_selected" : "File not selected",
+  "title" : "Title",
+  "details" : "Details",
+  "enter_title": "Enter Title",
+  "enter_details": "Enter Details"
 }
