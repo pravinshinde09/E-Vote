@@ -5,8 +5,9 @@ import { ThemeProvider } from "./context/ThemeProvider";
 import { LanguageContextProvider } from "./context/LocalizationContext";
 import { AppLockProvider } from "./context/ScreenLockContext";
 import { CurrencyProvider } from "./context/CurrencyProvider";
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView, StyleSheet } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
 
 export default function App() {
   return (
@@ -17,7 +18,9 @@ export default function App() {
             <ThemeProvider>
               <AppwriteContextProvider>
                 <GestureHandlerRootView style={{ flex: 1 }}>
-                  <Router />
+                  <NavigationContainer>
+                    <Router />
+                  </NavigationContainer>
                 </GestureHandlerRootView>
               </AppwriteContextProvider>
             </ThemeProvider>
@@ -30,6 +33,6 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
 });
