@@ -15,6 +15,7 @@ import FileViewer from '../FileViewer';
 import usePostAssets from '../../hooks/usePostAssets';
 import { sendNotification } from '../../appwriteDB/sendPushNotification';
 import Entypo from '@expo/vector-icons/Entypo';
+import { useLanguage } from '@/app/context/LocalizationContext';
 
 type PostCardProps = {
     post: PostData;
@@ -29,7 +30,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, userProfile, handleLike, hand
     const { colors } = useTheme();
     const styles = getStyles({ colors });
     const [disable, setDisable] = useState(false);
-
+    const { translate } = useLanguage();
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const snapPoints = ['20%', '80%'];
 
@@ -122,9 +123,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, userProfile, handleLike, hand
                 </View>
                 {!disable && (
                     <View style={styles.actionsContainer}>
-                        <Button onPress={() => handleLike(post.$id)} variant="button01" >AGREE</Button>
-                        <Button onPress={() => handleNeutral(post.$id)} variant="button02" >NEUTRAL</Button>
-                        <Button onPress={() => handleDislike(post.$id)} variant="button03" >DISAGREE</Button>
+                        <Button onPress={() => handleLike(post.$id)} variant="button01" >{translate('agree')}</Button>
+                        <Button onPress={() => handleDislike(post.$id)} variant="button02" >{translate('neutral')}</Button>
+                        <Button onPress={() => handleNeutral(post.$id)} variant="button03" >{translate('disAgree')}</Button>
                     </View>
                 )}
                 <BottomSheetModal
