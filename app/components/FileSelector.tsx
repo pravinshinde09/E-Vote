@@ -39,7 +39,7 @@ const FileSelector: React.FC<FileSelectorProps> = ({ onFileSelected }) => {
   return (
     <View style={styles.container}>
       <Button variant="secondary" onPress={selectFile}>
-        {translate('pick_files')}
+        {translate('select_file')}
       </Button>
       <View style={styles.previewContainer}>
         {selectedFileName ? (

@@ -1,11 +1,12 @@
 import React from 'react';
 import { Dimensions } from 'react-native';
 import Svg, { G, Path, Circle } from 'react-native-svg';
+import { useTheme } from '../context/ThemeProvider';
 
 const { width } = Dimensions.get('window');
-const size = width * 0.7; 
+const size = width * 0.7;
 const radius = size / 2;
-const strokeWidth = 60; 
+const strokeWidth = 60;
 
 
 const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -32,6 +33,8 @@ const PieChart = ({ data }: { data: { value: number; color: string }[] }) => {
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
   let cumulativeValue = 0;
+
+  const { colors } = useTheme()
   return (
     <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       <G rotation="-90" origin={`${radius}, ${radius}`}>
@@ -46,7 +49,7 @@ const PieChart = ({ data }: { data: { value: number; color: string }[] }) => {
         })}
       </G>
 
-      <Circle cx={radius} cy={radius} r={radius - strokeWidth} fill="white" />
+      <Circle cx={radius} cy={radius} r={radius - strokeWidth} fill={colors.inputBox} />
     </Svg>
   );
 };

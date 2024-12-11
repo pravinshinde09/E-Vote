@@ -13,6 +13,7 @@ import { StyleProps, useTheme } from '../context/ThemeProvider';
 import ReferencePostCard from './ReferencePostCard';
 import FileViewer from './FileViewer';
 import usePostAssets from '../hooks/usePostAssets';
+import { useLanguage } from '../context/LocalizationContext';
 
 type Props = {
   postData: PostData;
@@ -23,6 +24,7 @@ const Card = ({ postData, userProfile }: Props) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { colors } = useTheme();
   const styles = getStyles({ colors });
+  const {translate} = useLanguage()
 
   const timeAgo = (timestamp: string): string => {
     return moment(timestamp).fromNow();
@@ -73,7 +75,7 @@ const Card = ({ postData, userProfile }: Props) => {
             });
           }}
         >
-          Appeal
+          {translate('appeal')}
         </Button>
       </View>
     </View>
