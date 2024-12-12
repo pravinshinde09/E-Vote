@@ -74,7 +74,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, userProfile, handleLike, hand
     const timeAgo = (timestamp: string): string => moment(timestamp).fromNow();
 
     const totalCount = (post.like?.length || 0) + (post.disLike?.length || 0) + (post.neutral?.length || 0);
-    const pendingUser = totalUser - totalCount;
+    const pendingUser = Math.max(0, totalUser - totalCount);    
 
     const getWidthPercentage = (count: number) => {
         if (totalCount === 0) return 0; 
