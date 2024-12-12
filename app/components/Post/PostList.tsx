@@ -11,8 +11,8 @@ import { UserData } from '../Profile/Type';
 import showAlert from '../Alert';
 import PostCard from './PostCard';
 import Loading from '../Loading';
-import { useUserOrg } from '@/app/context/userOrgContext';
-import { useLanguage } from '@/app/context/LocalizationContext';
+import { useUserOrg } from '../../context/userOrgContext';
+import { useLanguage } from '../../context/LocalizationContext';
 
 const PostList = () => {
   const [posts, setPosts] = useState<PostData[]>([]);

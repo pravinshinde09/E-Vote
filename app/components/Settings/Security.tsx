@@ -31,13 +31,13 @@ const Security = () => {
                     <AntDesign name="right" size={20} color="black" style={[styles.iconStyle, styles.arrowIcon]} />
                 </TouchableOpacity>
 
-                <View style={styles.divider} />
+                {/* <View style={styles.divider} />
 
                 <TouchableOpacity onPress={() => navigation.navigate('ChangeCurrency' as never)} style={styles.iconTextStyle}>
                     <MaterialIcons name="currency-exchange" size={24} style={styles.iconStyle} />
                     <Typography variant="title04">{translate("change_currency")}</Typography>
                     <AntDesign name="right" size={20} color="black" style={[styles.iconStyle, styles.arrowIcon]} />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
         </View>
