@@ -15,7 +15,7 @@ import FileViewer from '../FileViewer';
 import usePostAssets from '../../hooks/usePostAssets';
 import { sendNotification } from '../../appwriteDB/sendPushNotification';
 import Entypo from '@expo/vector-icons/Entypo';
-import { useLanguage } from '@/app/context/LocalizationContext';
+import { useLanguage } from '../../context/LocalizationContext';
 
 type PostCardProps = {
     post: PostData;
@@ -77,7 +77,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, userProfile, handleLike, hand
     const pendingUser = totalUser - totalCount;
 
     const getWidthPercentage = (count: number) => {
-        if (totalCount === 0) return 0;
+        if (totalCount === 0) return 0; 
         return (count / totalCount) * 100;
     };
 
