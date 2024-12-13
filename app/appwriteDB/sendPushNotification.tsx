@@ -65,7 +65,7 @@ const storeNotificationInBackend = async (userId: string, title: string, message
             );
             console.log('Notification stored successfully');
         } else {
-            console.log('Notification already exists');
+            // console.log('Notification already exists');
         }
     } catch (error) {
         console.error('Error storing notification in backend:', error);

@@ -108,6 +108,7 @@ class UserDatabaseService {
   }
 
   async getTotalUsers(organizationId: string): Promise<number> {
+    
     try {
       const response = await databases.listDocuments(
         APPWRITE_DATABASE_ID,
@@ -116,6 +117,7 @@ class UserDatabaseService {
       );
   
       const totalUsers = response.total;
+      console.log('orgId:', organizationId);
       console.log('Total users:', totalUsers);
       return totalUsers;
     } catch (error) {

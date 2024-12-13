@@ -74,10 +74,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, userProfile, handleLike, hand
     const timeAgo = (timestamp: string): string => moment(timestamp).fromNow();
 
     const totalCount = (post.like?.length || 0) + (post.disLike?.length || 0) + (post.neutral?.length || 0);
-    const pendingUser = Math.max(0, totalUser - totalCount);    
+    const pendingUser = Math.max(0, totalUser - totalCount);
 
     const getWidthPercentage = (count: number) => {
-        if (totalCount === 0) return 0; 
+        if (totalCount === 0) return 0;
         return (count / totalCount) * 100;
     };
 
@@ -124,8 +124,8 @@ const PostCard: React.FC<PostCardProps> = ({ post, userProfile, handleLike, hand
                 {!disable && (
                     <View style={styles.actionsContainer}>
                         <Button onPress={() => handleLike(post.$id)} variant="button01" >{translate('agree')}</Button>
-                        <Button onPress={() => handleDislike(post.$id)} variant="button02" >{translate('neutral')}</Button>
-                        <Button onPress={() => handleNeutral(post.$id)} variant="button03" >{translate('disAgree')}</Button>
+                        <Button onPress={() => handleNeutral(post.$id)} variant="button02" >{translate('neutral ')}</Button>
+                        <Button onPress={() => handleDislike(post.$id)} variant="button03" >{translate('disAgree')}</Button>
                     </View>
                 )}
                 <BottomSheetModal
