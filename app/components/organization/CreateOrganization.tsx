@@ -10,11 +10,14 @@ import Button from '../../components/Button';
 import Loading from '../../components/Loading';
 import { createOrganization } from '../../appwriteDB/organizationInfo_db';
 import UserDatabaseService from '../../appwriteDB/user_db';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { HomeStackParamList } from '../../navigation/HomeScreenNavigation';
 
 const OrganizationCreation = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const { translate } = useLanguage();
     const userDatabaseService = new UserDatabaseService();
+    const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
 
     const handleSubmit = async () => {
         if (state.isUploading) return;
@@ -42,6 +45,7 @@ const OrganizationCreation = () => {
                 await userDatabaseService.updateUserOrganizationId(userId, organizationId);
                 Alert.alert(translate('Organization created successfully'));
                 dispatch(resetState());
+                navigation.navigate('OrganizationInfo');
             } else {
                 Alert.alert(translate('Error creating organization'));
             }

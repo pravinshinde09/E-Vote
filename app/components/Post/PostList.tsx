@@ -13,6 +13,7 @@ import PostCard from './PostCard';
 import Loading from '../Loading';
 import { useUserOrg } from '../../context/userOrgContext';
 import { useLanguage } from '../../context/LocalizationContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PostList = () => {
   const [posts, setPosts] = useState<PostData[]>([]);
@@ -21,179 +22,108 @@ const PostList = () => {
   const [error, setError] = useState<string | null>(null);
   const [userProfiles, setUserProfiles] = useState<{ [key: string]: UserData | null }>({});
   const userDatabaseService = new UserDatabaseService();
+  const { organizationId } = useUserOrg();
+  const { translate } = useLanguage();
   const [totalUsers, setTotalUsers] = useState<number>(0);
-  const { organizationId } = useUserOrg()
-  const { translate } = useLanguage()
 
+  // Fetch total users on mount
   useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  useEffect(() => {
-    const getAllUserTotal = async () => {
+    const fetchTotalUsers = async () => {
       try {
         const response = await userDatabaseService.getTotalUsers(organizationId);
         setTotalUsers(response || 0);
       } catch (error) {
-        console.log('Error occurred while fetching total user count.');
+        console.error('Error fetching total user count:', error);
       }
     };
-    getAllUserTotal();
+    fetchTotalUsers();
+  }, [organizationId]);
+
+  // Fetch posts on mount or refresh
+  useEffect(() => {
+    fetchPosts();
   }, []);
 
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const isApproved = false;
-      const isDisApproved = false;
 
-      // If organizationId is not available, get the current user's ID
       const user = await account.get();
       const userId = user.$id;
 
-      let response;
+      // Retrieve organization ID from AsyncStorage or context
+      const storedOrg = await AsyncStorage.getItem('organizationDetails');
+      const orgId = storedOrg ? JSON.parse(storedOrg).$id : organizationId;
 
-      if (organizationId) {
-        response = await listPostsByStatus(isApproved, isDisApproved, organizationId);
-      } else {
-        response = await listPostsByUser(userId);
-      }
+      // Fetch posts based on organization ID or user ID
+      const isApproved = false;
+      const isDisApproved = false;
+      const response = orgId
+        ? await listPostsByStatus(isApproved, isDisApproved, orgId)
+        : await listPostsByUser(userId);
 
       // Sort posts by timestamp
       response.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-      // Map and set posts
+      // Map posts and update statuses
       const formattedPosts = mapPostResponse(response);
-      setPosts(formattedPosts);
+      formattedPosts.forEach((post) => {
+        const likePercentage = calculatePercentage(post.like?.length || 0);
+        const disLikePercentage = calculatePercentage(post.disLike?.length || 0);
 
-      // Fetch user profiles for all posts
-      const profiles: { [key: string]: UserData | null } = {};
-      for (const post of formattedPosts) {
-        const profile = await fetchUserProfile(post.userId);
-        profiles[post.userId] = profile;
-      }
+        if (likePercentage > 50 && !post.isApproved) updatePost(post.$id, true);
+        if (disLikePercentage > 50 && !post.isDisApproved) updatePost(post.$id, undefined, true);
+      });
+
+      // Fetch user profiles concurrently
+      const profilePromises = formattedPosts.map((post) => fetchUserProfile(post.userId));
+      const profilesArray = await Promise.all(profilePromises);
+      const profiles = formattedPosts.reduce((acc, post, index) => {
+        acc[post.userId] = profilesArray[index];
+        return acc;
+      }, {});
       setUserProfiles(profiles);
 
+      setPosts(formattedPosts);
     } catch (err) {
-      console.error("Error fetching posts:", err);
-      setError("Failed to load posts");
+      console.error('Error fetching posts:', err);
+      setError('Failed to load posts.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchPosts();
-  }, []);
-
-  const handleLike = async (postId: string) => {
-    showAlert({
-      title: translate("post_agree"),
-      message: translate("post_agree_msg"),
-      cancelText: translate('cancel'),
-      onConfirm: async () => {
-        try {
-          const user = await account.get();
-          const userId = user.$id;
-          const updatedPost = (await likePost(postId, userId)) as unknown as PostData;
-          setPosts(posts.map((post) => (post.$id === postId ? updatedPost : post)));
-        } catch (err) {
-          console.error("Error liking post:", err);
-          Alert.alert("Error", "Failed to like post");
-        }
-      },
-      confirmText: translate("agree")
-    });
-  };
-
-  const handleDislike = async (postId: string) => {
-    showAlert({
-      title: translate("post_disAgree"),
-      message: translate("post_disAgree_msg"),
-      cancelText: translate('cancel'),
-      onConfirm: async () => {
-        try {
-          const user = await account.get();
-          const userId = user.$id;
-          const updatedPost = (await dislikePost(postId, userId)) as unknown as PostData;
-          setPosts(posts.map((post) => (post.$id === postId ? updatedPost : post)));
-        } catch (err) {
-          console.error("Error disliking post:", err);
-          Alert.alert("Error", "Failed to dislike post");
-        }
-      },
-      confirmText: translate('disAgree')
-    });
-  };
-
-  const handleNeutral = async (postId: string) => {
-    showAlert({
-      title: translate("post_neutral"),
-      message: translate("post_neutral_msg"),
-      cancelText: translate('cancel'),
-      onConfirm: async () => {
-        try {
-          const user = await account.get();
-          const userId = user.$id;
-          const updatedPost = (await neutralPost(postId, userId)) as unknown as PostData;
-          setPosts(posts.map((post) => (post.$id === postId ? updatedPost : post)));
-        } catch (err) {
-          console.error("Error setting post to neutral:", err);
-          Alert.alert("Error", "Failed to set post to neutral");
-        }
-      },
-      confirmText: translate('neutral')
-    });
-  };
-
   const fetchUserProfile = async (userId: string): Promise<UserData | null> => {
     try {
-      const userProfile = await userDatabaseService.getUserProfile(userId);
-      return userProfile;
+      return await userDatabaseService.getUserProfile(userId);
     } catch (error) {
-      console.error("Error fetching user profile:", error);
+      console.error('Error fetching user profile:', error);
       return null;
     }
   };
 
   const updatePost = async (postId: string, isApproved?: boolean, isDisApproved?: boolean) => {
     try {
-
       const statusUpdate: { isApproved?: boolean; isDisApproved?: boolean } = {};
-
-      if (isApproved !== undefined) {
-        statusUpdate.isApproved = isApproved;
-      }
-
-      if (isDisApproved !== undefined) {
-        statusUpdate.isDisApproved = isDisApproved;
-      }
-
-      if (Object.keys(statusUpdate).length > 0) {
-        await updatePostStatus(postId, statusUpdate);
-      }
+      if (isApproved !== undefined) statusUpdate.isApproved = isApproved;
+      if (isDisApproved !== undefined) statusUpdate.isDisApproved = isDisApproved;
+      if (Object.keys(statusUpdate).length > 0) await updatePostStatus(postId, statusUpdate);
     } catch (error) {
-      console.error("Error updating post status:", error);
+      console.error('Error updating post status:', error);
     }
   };
 
-  const calculatePercentage = (count: number): number => (totalUsers > 0 ? (count / totalUsers) * 100 : 0);
+  const calculatePercentage = (count: number): number =>
+    totalUsers > 0 ? (count / totalUsers) * 100 : 0;
 
-  const renderItem = ({ item }: { item: PostData }) => {
-    const likePercentage = calculatePercentage(item.like?.length || 0);
-    const disLikePercentage = calculatePercentage(item.disLike?.length || 0);
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchPosts();
+  }, []);
 
-    // Update post based on like and dislike percentages
-    if (likePercentage > 50 && !item.isApproved) {
-      updatePost(item.$id, true);
-    }
-    if (disLikePercentage > 50 && !item.isDisApproved) {
-      updatePost(item.$id, undefined, true);
-    }
-    return (
+  const renderItem = useCallback(
+    ({ item }: { item: PostData }) => (
       <PostCard
         post={item}
         userProfile={userProfiles[item.userId] || null}
@@ -202,7 +132,49 @@ const PostList = () => {
         handleNeutral={handleNeutral}
         totalUser={totalUsers}
       />
-    );
+    ),
+    [userProfiles, posts, totalUsers]
+  );
+
+  const handleLike = async (postId: string) => {
+    showAlert({
+      title: translate('post_agree'),
+      message: translate('post_agree_msg'),
+      cancelText: translate('cancel'),
+      confirmText: translate('agree'),
+      onConfirm: async () => handlePostInteraction(postId, likePost),
+    });
+  };
+
+  const handleDislike = async (postId: string) => {
+    showAlert({
+      title: translate('post_disAgree'),
+      message: translate('post_disAgree_msg'),
+      cancelText: translate('cancel'),
+      confirmText: translate('disAgree'),
+      onConfirm: async () => handlePostInteraction(postId, dislikePost),
+    });
+  };
+
+  const handleNeutral = async (postId: string) => {
+    showAlert({
+      title: translate('post_neutral'),
+      message: translate('post_neutral_msg'),
+      cancelText: translate('cancel'),
+      confirmText: translate('neutral'),
+      onConfirm: async () => handlePostInteraction(postId, neutralPost),
+    });
+  };
+
+  const handlePostInteraction = async (postId: string, action: Function) => {
+    try {
+      const user = await account.get();
+      const updatedPost = (await action(postId, user.$id)) as PostData;
+      setPosts(posts.map((post) => (post.$id === postId ? updatedPost : post)));
+    } catch (err) {
+      console.error('Error updating post interaction:', err);
+      Alert.alert('Error', 'Failed to update post interaction.');
+    }
   };
 
   if (loading && !refreshing) {
@@ -223,9 +195,7 @@ const PostList = () => {
       renderItem={renderItem}
       keyExtractor={(item) => item.$id}
       contentContainerStyle={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     />
   );
 };
@@ -244,4 +214,3 @@ const styles = StyleSheet.create({
 });
 
 export default PostList;
-
