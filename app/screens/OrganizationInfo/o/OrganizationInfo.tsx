@@ -1,57 +1,56 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { StyleSheet, View, Alert, TouchableOpacity, Share, RefreshControl } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native'; 
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Alert, TouchableOpacity, Share, RefreshControl, ScrollView } from 'react-native';
+import { useFocusEffect, useNavigation, NavigationProp } from '@react-navigation/native';
 import Typography from '../../../components/Typography';
 import { StyleProps, useTheme } from '../../../context/ThemeProvider';
 import { SPACING } from '../../../theme';
-import { deleteOrganization, listOrganization, organizationData } from '../../../appwriteDB/organizationInfo_db';
+import {
+    deleteOrganization,
+    listOrganization,
+    organizationData
+} from '../../../appwriteDB/organizationInfo_db';
 import UserDatabaseService from '../../../appwriteDB/user_db';
 import Input from '../../../components/TextInput';
 import Button from '../../../components/Button';
-import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useUserOrg } from '../../../context/userOrgContext';
-import { ScrollView } from 'react-native-gesture-handler';
+import { HomeStackParamList } from '../../../navigation/HomeScreenNavigation';
 
 const OrganizationInfo = () => {
-    const initialOrganizationDetails = useMemo(() => ({
-        $id: '',
-        userId: '',
-        name: '',
-        details: '',
-    }), []);
-
-    const [organizationDetails, setOrganizationDetails] = useState<organizationData>(initialOrganizationDetails);
-    const [showOrganization, setShowOrganization] = useState<boolean>(false);
+    const [organizationDetails, setOrganizationDetails] = useState<organizationData | null>(null);
     const [orgId, setOrgId] = useState<string>('');
+    const [refreshing, setRefreshing] = useState(false);
+
     const { colors } = useTheme();
     const styles = getStyles({ colors });
     const userDatabaseService = new UserDatabaseService();
-    const navigation = useNavigation();
+    const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
     const { userId, organizationId, refreshOrganizationInfo, loading } = useUserOrg();
-    const [showButton, setShowButton] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
 
-    const onRefresh = async () => {
-        setRefreshing(true);
-        await refreshOrganizationInfo();
-        await fetchOrganizationInfo();
-        setRefreshing(false);
-    };
-
-    const getStoredOrganization = async () => {
+    // Fetch organization info
+    const fetchOrganizationInfo = async () => {
         try {
-            const storedOrg = await AsyncStorage.getItem('organizationDetails');
-            if (storedOrg) {
-                setOrganizationDetails(JSON.parse(storedOrg));
-                setShowOrganization(true);
+            if (!organizationId) {
+                clearOrganizationFromStorage();
+                setOrganizationDetails(null);
+                Alert.alert('No Organization', 'No organization ID found. Kindly add your organization ID.');
+                return;
+            }
+            const response = await listOrganization(organizationId);
+            if (response?.$id) {
+                setOrganizationDetails(response);
+                saveOrganizationToStorage(response);
+            } else {
+                handleNoOrganization();
             }
         } catch (error) {
-            console.error('Error loading stored organization info:', error);
+            console.error('Error fetching organization info:', error);
+            Alert.alert('Error', 'Failed to fetch organization details. Please try again.');
         }
     };
 
+    // Helpers for AsyncStorage
     const saveOrganizationToStorage = async (orgData: organizationData) => {
         try {
             await AsyncStorage.setItem('organizationDetails', JSON.stringify(orgData));
@@ -67,150 +66,101 @@ const OrganizationInfo = () => {
             console.error('Error clearing organization info:', error);
         }
     };
-    
-        const fetchOrganizationInfo = async () => {
-            try {
-                if (organizationId) {
-                    const response = await listOrganization(organizationId);
-                    if (response && response.$id) {
-                        setOrganizationDetails(response);
-                        setShowOrganization(true);
-                        saveOrganizationToStorage(response);
-                    } else {
-                        clearOrganizationFromStorage();
-                        setOrganizationDetails(initialOrganizationDetails);
-                        setShowOrganization(false);
-                        Alert.alert('No Data', 'No organization info available. Kindly contact your organizer.');
-                    }
-                } else {
-                    clearOrganizationFromStorage();
-                    setOrganizationDetails(initialOrganizationDetails);
-                    setShowOrganization(false);
-                    Alert.alert('No Organization', 'No organization ID found. Kindly add your organization ID.');
-                }
-            } catch (error) {
-                console.error('Error fetching organization info:', error);
-                Alert.alert('Error to loading Organization', 'Your organizer delete organization, kindly contact your organizer.');
-            }
-        };
 
-    useEffect(() => {
-        getStoredOrganization();
-            if (organizationId) {
-                fetchOrganizationInfo();
-            }
-    }, [organizationId]);
-
-    useEffect(() => {
-        if (userId === organizationDetails.userId) {
-            setShowButton(true);
-        }
-    }, [userId, organizationDetails]);
-
-    useFocusEffect(
-        React.useCallback(() => {
-            if (!organizationDetails.$id || !organizationDetails.name || !organizationDetails.details) {
-                refreshOrganizationInfo();
-            }
-        }, [organizationDetails])
-    );
+    const handleNoOrganization = () => {
+        clearOrganizationFromStorage();
+        setOrganizationDetails(null);
+        Alert.alert('No Data', 'No organization info available. Kindly contact your organizer.');
+    };
 
     const handleSubmit = async () => {
         try {
             await userDatabaseService.updateUserOrganizationId(userId, orgId);
             const response = await listOrganization(orgId);
-
-            if (response && response.$id) {
+            if (response?.$id) {
                 setOrganizationDetails(response);
-                setShowOrganization(true);
                 saveOrganizationToStorage(response);
             } else {
-                clearOrganizationFromStorage();
-                setShowOrganization(false);
-                Alert.alert('No Data', 'No organization data found. Kindly add your organization Id.');
+                handleNoOrganization();
             }
         } catch (error) {
             console.error('Error updating organization ID:', error);
             Alert.alert('Error', 'Failed to update organization ID.');
         }
-    }
+    };
+
     const handleShare = async () => {
         try {
-            const result = await Share.share({
-                message: `Organization ID: ${organizationDetails.$id}`,
-            });
-            if (result.action === Share.sharedAction) {
-                console.log(result.activityType ? 'Shared with activity type' : 'Shared successfully');
-            } else {
-                console.log('Share dismissed');
-            }
+            await Share.share({ message: `Organization ID: ${organizationDetails?.$id}` });
         } catch (error) {
             console.error('Error sharing:', error);
-            Alert.alert('Error', 'There was an error trying to share the organization details.');
+            Alert.alert('Error', 'Failed to share organization details.');
         }
     };
 
     const handleDelete = async () => {
         try {
-            if (userId === organizationDetails.userId) {
+            if (userId === organizationDetails?.userId) {
                 await deleteOrganization(organizationId);
             }
             await userDatabaseService.updateUserOrganizationId(userId, '');
-            setOrganizationDetails({
-                $id: '',
-                userId: '',
-                name: '',
-                details: '',
-            });
-            setShowOrganization(false);
-            await clearOrganizationFromStorage();
-
+            setOrganizationDetails(null);
+            clearOrganizationFromStorage();
             Alert.alert('Success', 'Organization deleted successfully.');
         } catch (error) {
-            console.log('Error occurred while deleting organization:', error);
-            Alert.alert('Error', 'Failed to delete the organization. Please try again.');
+            console.error('Error deleting organization:', error);
+            Alert.alert('Error', 'Failed to delete the organization.');
         }
     };
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await refreshOrganizationInfo();
+        await fetchOrganizationInfo();
+        setRefreshing(false);
+    };
+
+    useEffect(() => {
+        if (organizationId) fetchOrganizationInfo();
+    }, [organizationId]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            if (!organizationDetails) refreshOrganizationInfo();
+        }, [organizationDetails])
+    );
 
     return (
-        <ScrollView
-            refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-        >
+        <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
             <View style={styles.container}>
-                {showOrganization ? (
+                {organizationDetails ? (
                     <View style={styles.infoContainer}>
-                        <View style={[styles.card, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+                        <View style={[styles.card, styles.row]}>
                             <View>
-                                <Typography variant={"title03"} style={{ fontWeight: '700' }}>Organization ID:</Typography>
+                                <Typography variant="title03" style={styles.boldText}>Organization ID:</Typography>
                                 <Typography variant="title03">{organizationDetails.$id}</Typography>
                             </View>
                             <TouchableOpacity onPress={handleShare}>
-                                <AntDesign name="sharealt" size={24} color={colors.icon} style={{ paddingHorizontal: SPACING.spacing03 }} />
+                                <AntDesign name="sharealt" size={24} color={colors.icon} />
                             </TouchableOpacity>
                         </View>
                         <View style={styles.card}>
-                            <Typography variant={"title03"} style={{ fontWeight: '700' }}>Organization Name:</Typography>
+                            <Typography variant="title03" style={styles.boldText}>Organization Name:</Typography>
                             <Typography variant="title03">{organizationDetails.name}</Typography>
                         </View>
                         <View style={styles.card}>
-                            <Typography variant={"title03"} style={{ fontWeight: '700' }}>Organization Details:</Typography>
+                            <Typography variant="title03" style={styles.boldText}>Organization Details:</Typography>
                             <Typography variant="title04">{organizationDetails.details}</Typography>
                         </View>
-
-                        <View style={{ gap: SPACING.spacing02, paddingVertical: SPACING.spacing03 }}>
-                            {showButton && (
-                                <Button variant='button01' onPress={() => navigation.navigate('UpdateOrganization' as never)}>
-                                    Update
-                                </Button>
+                        <View style={styles.buttonContainer}>
+                            {userId === organizationDetails.userId && (
+                                <Button onPress={() => navigation.navigate('UpdateOrganization')}>Update</Button>
                             )}
-                            <Button variant='button03' onPress={() => handleDelete()}>Delete</Button>
+                            <Button variant="button03" onPress={handleDelete}>Delete</Button>
                         </View>
                     </View>
                 ) : (
-                    <View style={styles.OrgInputStyle}>
+                    <View style={styles.inputContainer}>
                         <Input
                             label="Organization ID"
                             placeholder="Enter your organization ID"
@@ -218,8 +168,8 @@ const OrganizationInfo = () => {
                             onChangeText={setOrgId}
                         />
                         <Button onPress={handleSubmit}>Submit</Button>
-                        <Typography variant={'title01'} style={{ alignSelf: 'center' }}> OR </Typography>
-                        <Button variant='secondary' onPress={() => navigation.navigate('CreateOrganization' as never)}>Create Organization</Button>
+                        <Typography variant="title01" style={styles.centerText}>OR</Typography>
+                        <Button variant="secondary" onPress={() => navigation.navigate('CreateOrganization')}>Create Organization</Button>
                     </View>
                 )}
             </View>
@@ -229,26 +179,14 @@ const OrganizationInfo = () => {
 
 export default OrganizationInfo;
 
-const getStyles = ({ colors }: StyleProps) => StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: SPACING.spacing03,
-        backgroundColor: colors.background,
-    },
-    card: {
-        backgroundColor: colors.card,
-        borderRadius: 8,
-        padding: SPACING.spacing02,
-        marginVertical: SPACING.spacing01,
-        shadowColor: colors.gray100,
-        shadowOpacity: 0.2,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 3,
-    },
-    infoContainer: {
-        gap: SPACING.spacing01,
-    },
-    OrgInputStyle: {
-        gap: SPACING.spacing03
-    }
-});
+const getStyles = ({ colors }: StyleProps) =>
+    StyleSheet.create({
+        container: { flex: 1, padding: SPACING.spacing03, backgroundColor: colors.background },
+        card: { backgroundColor: colors.card, borderRadius: 8, padding: SPACING.spacing02, marginVertical: SPACING.spacing01 },
+        boldText: { fontWeight: '700' },
+        infoContainer: { gap: SPACING.spacing02 },
+        buttonContainer: { marginTop: SPACING.spacing03, gap: SPACING.spacing02 },
+        inputContainer: { gap: SPACING.spacing03 },
+        row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+        centerText: { alignSelf: 'center' },
+    });

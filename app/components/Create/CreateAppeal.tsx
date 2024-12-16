@@ -14,6 +14,7 @@ import Button from '../Button';
 import Loading from '../Loading';
 import FileSelector from '../FileSelector';
 import { createPostAssets } from '../../appwriteDB/postAssets';
+import { useUserOrg } from '../../context/userOrgContext';
 
 type CreateAppealRouteProp = RouteProp<CreatePostStackParamList, 'CreateAppeal'>;
 
@@ -30,6 +31,7 @@ const CreateAppeal = () => {
                 dispatch(setField({
                     title: post.title,
                     details: post.details,
+                    organizationId: post.organizationId,
                 }));
             } catch (error) {
                 Alert.alert(`Error fetching post: ${(error as Error).message}`);
@@ -82,7 +84,8 @@ const CreateAppeal = () => {
                 timestamp: new Date().toISOString(),
                 isApproved: false,
                 postAssets: state.postAssets,
-                referencePostId: postId
+                referencePostId: postId,
+                organizationId: state.organizationId
             };
 
             const response = await createPost(post);
