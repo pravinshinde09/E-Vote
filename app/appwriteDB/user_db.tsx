@@ -117,8 +117,6 @@ class UserDatabaseService {
       );
   
       const totalUsers = response.total;
-      console.log('orgId:', organizationId);
-      console.log('Total users:', totalUsers);
       return totalUsers;
     } catch (error) {
       console.error("DatabaseService :: getTotalUsers : ", error);
