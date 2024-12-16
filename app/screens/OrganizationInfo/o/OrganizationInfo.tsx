@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { StyleSheet, View, Alert, TouchableOpacity, Share, RefreshControl } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native'; 
 import Typography from '../../../components/Typography';
 import { StyleProps, useTheme } from '../../../context/ThemeProvider';
 import { SPACING } from '../../../theme';
@@ -35,6 +36,7 @@ const OrganizationInfo = () => {
     const onRefresh = async () => {
         setRefreshing(true);
         await refreshOrganizationInfo();
+        await fetchOrganizationInfo();
         setRefreshing(false);
     };
 
@@ -65,8 +67,7 @@ const OrganizationInfo = () => {
             console.error('Error clearing organization info:', error);
         }
     };
-
-    useEffect(() => {
+    
         const fetchOrganizationInfo = async () => {
             try {
                 if (organizationId) {
@@ -93,8 +94,11 @@ const OrganizationInfo = () => {
             }
         };
 
+    useEffect(() => {
         getStoredOrganization();
-        fetchOrganizationInfo();
+            if (organizationId) {
+                fetchOrganizationInfo();
+            }
     }, [organizationId]);
 
     useEffect(() => {
@@ -102,6 +106,14 @@ const OrganizationInfo = () => {
             setShowButton(true);
         }
     }, [userId, organizationDetails]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            if (!organizationDetails.$id || !organizationDetails.name || !organizationDetails.details) {
+                refreshOrganizationInfo();
+            }
+        }, [organizationDetails])
+    );
 
     const handleSubmit = async () => {
         try {

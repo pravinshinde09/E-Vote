@@ -7,10 +7,13 @@ import Input from '../TextInput';
 import Button from '../Button';
 import { useUserOrg } from '../../context/userOrgContext';
 import { SPACING } from '../../theme';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { HomeStackParamList } from '../../navigation/HomeScreenNavigation';
 
 const UpdateOrganization = () => {
     const [state, dispatch] = useReducer(reducer, initialState);
     const { userId, organizationId } = useUserOrg();
+    const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
 
     const fetchOrganizationInfo = async () => {
         try {
@@ -49,6 +52,7 @@ const UpdateOrganization = () => {
             if (response) {
                 Alert.alert('Organization Details Updated Successfully.');
                 console.log('Organization updated successfully');
+                navigation.navigate('OrganizationInfo');
             } else {
                 Alert.alert('Error in updating organization.');
             }
